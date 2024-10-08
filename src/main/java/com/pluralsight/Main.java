@@ -1,13 +1,176 @@
 package com.pluralsight;
 
+import java.util.Objects;
+
 public class Main {
+
+    public static Book[] Library;
+
+
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        Library = GetInitializedLibrary();
+
+        char option;
+        do{
+            option = PromptMainChoices();
+
+            if(option == 'A'){
+                Book[] availableBooks = GetAvailableBooks(Library);
+                DisplayBooks(availableBooks);
+                checkOutBook(availableBooks);
+            }else if(option == 'C'){
+                Book[] checkedOutBooks = GetCheckedOutBooks(Library);
+                DisplayBooks(checkedOutBooks);
+                checkInBook(checkedOutBooks);
+
+            }
+        }while (option != 'X');
+
+    }
+
+
+    public static Book[] GetAvailableBooks(Book[] books){
+        Book[] available = new Book[books.length];
+        int nextIndex = 0;
+        for(Book book : books){
+            if(!book.isCheckedOut()){
+                available[nextIndex++] = book;
+            }
+        }
+        Book[] results = new Book[nextIndex];
+        System.arraycopy(available,0,results,0,nextIndex);
+
+        return results;
+    }
+
+    public static Book[] GetCheckedOutBooks(Book[] books){
+        Book[] checkedout = new Book[books.length];
+        int nextIndex = 0;
+        for(Book book : books){
+            if(book.isCheckedOut()){
+                checkedout[nextIndex++] = book;
+            }
+        }
+        Book[] results = new Book[nextIndex];
+        System.arraycopy(checkedout,0,results,0,nextIndex);
+
+        return results;
+    }
+
+    public static char PromptMainChoices(){
+        System.out.println("Welcome to the Library!  Please select from the following choices:");
+        System.out.println("    Show [A]vailable Books");
+        System.out.println("    Show [C]hecked Out Books");
+        System.out.println("    E[X]it the Library");
+
+        do{
+
+            System.out.print("Command [A, C, X]: ");
+            String command = Console.PromptForString();
+
+            if ( command.equalsIgnoreCase("A")){
+                return 'A';
+            }
+            if (command.equalsIgnoreCase("C")){
+                return 'C';
+            }
+            if (command.equalsIgnoreCase("X")
+                    || command.equalsIgnoreCase("EXIT")
+                    || command.equalsIgnoreCase("Q")
+                    || command.equalsIgnoreCase("QUIT")
+            ){
+                return 'X';
+            }
+        }  while (true);
+
+
+
+    }
+
+    public static void checkInBook(Book[] checkedOutBooks){
+        boolean want = Console.PromptForYesNo("Would you like to check in a book today?");
+        String command;
+        if (want) {
+            do {
+                command = Console.PromptForString("Please enter Id number of the book you would like to check in or X to exit: ");
+                if (command.equalsIgnoreCase("X")
+                        || command.equalsIgnoreCase("EXIT")
+                        || command.equalsIgnoreCase("Q")
+                        || command.equalsIgnoreCase("QUIT")
+                ) {
+                    break;
+                } else {
+                    int idNumber = Integer.parseInt(command);
+                    boolean isBookCheckedOut = false;
+                    for (Book checkedBook : checkedOutBooks) {
+                        if (checkedBook.getId() == idNumber) {
+                            checkedBook.checkIn();
+                            isBookCheckedOut = true;
+
+                        }
+                    }
+                    if (isBookCheckedOut){
+                        System.out.println("Book has been successfully checked in!!!");
+                    }else{
+                        System.out.println("Can not check in this book");
+
+                }
+
+
+            }
+        }while (true);
+    }
+
+
+}
+
+    public static void checkOutBook(Book[] availableBooks){
+        boolean want = Console.PromptForYesNo("Would you like to check out a book today?");
+        String name;
+        String command;
+        if (want) {
+            name = Console.PromptForString("What is your name?");
+            do {
+                command = Console.PromptForString("Please enter Id number of the book you would like to check out or X to exit: ");
+                if (command.equalsIgnoreCase("X")
+                        || command.equalsIgnoreCase("EXIT")
+                        || command.equalsIgnoreCase("Q")
+                        || command.equalsIgnoreCase("QUIT")
+                ) {
+                    break;
+                } else {
+                    int idNumber = Integer.parseInt(command);
+                    boolean bookReceived = false;
+                    for (Book availableBook : availableBooks) {
+                        if (availableBook.getId() == idNumber) {
+                            availableBook.checkOut(name);
+                            bookReceived = true;
+
+                        }
+                    }
+                    if (!bookReceived){
+                        System.out.println("Book not Available");
+                    }
+
+                }
+
+
+            } while (true);
+        }
+    }
+
+    public static void DisplayBooks(Book[] books){
+        System.out.printf("%5s %55s %20s %24s\n" , "ID", "TITLE", "ISBN", "CHECKOUT OUT TO" );
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
+        for(Book book : books){
+            System.out.printf("%5s %55s %20s %24s\n" , book.getId(), book.getTitle(), book.getISBN(), book.getCheckedOutTo());
+        }
+
     }
 
 
 
-    public static Book[] getInitializedLibrary(){
+    public static Book[] GetInitializedLibrary(){
         Book[] library = new Book[20];
         library[0] = new Book(1, "Practical Tableau", "ISBN11332211");
         library[1] = new Book(2, "Pro Git", "ISBN1133229918");
@@ -29,6 +192,9 @@ public class Main {
         library[17] = new Book(18, "The Mythical Man-Month", "ISBN9780201835953");
         library[18] = new Book(19, "Learning JavaScript Data Structures and Algorithms", "ISBN9781785880332");
         library[19] = new Book(20, "The Elements of Programming Interviews", "ISBN9781512218237");
+
+        library[3].checkOut("Matt");
+        library[7].checkOut("Very Long Named John");
 
         return library;
     }
